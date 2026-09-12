@@ -1,7 +1,7 @@
 import { Note, Tag } from '../types';
 
-const STORAGE_KEY = 'diary-notes';
-const TAGS_KEY = 'diary-tags';
+const STORAGE_KEY = 'diary-notes-v2';
+const TAGS_KEY = 'diary-tags-v2';
 
 /** Сохранить заметки в LocalStorage */
 export function saveNotes(notes: Note[]): void {
@@ -74,6 +74,9 @@ export function getDemoNotes(): Note[] {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30);
   const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 18, 45);
   const twoDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2, 14, 0);
+  const threeDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3, 9, 15);
+  const fiveDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 5, 20, 0);
+  const sevenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7, 16, 30);
 
   return [
     {
@@ -107,6 +110,38 @@ export function getDemoNotes(): Note[] {
       tags: [{ id: 'tag-3', name: 'Идеи', color: 'purple' }],
       createdAt: twoDaysAgo.toISOString(),
       updatedAt: twoDaysAgo.toISOString(),
+      isPinned: false,
+    },
+    {
+      id: 'demo-4',
+      title: 'Рецепт пасты',
+      content: '<h2>Паста с томатами и базиликом</h2><p>Простой и вкусный рецепт на 2 порции.</p><h3>Ингредиенты:</h3><ul data-type="taskList"><li data-type="taskItem" data-checked="true"><p>Спагетти — 200 г</p></li><li data-type="taskItem" data-checked="true"><p>Томаты черри — 300 г</p></li><li data-type="taskItem" data-checked="false"><p>Базилик свежий</p></li><li data-type="taskItem" data-checked="false"><p>Чеснок — 2 зубчика</p></li><li data-type="taskItem" data-checked="false"><p>Оливковое масло</p></li></ul><p>Время приготовления: <strong>20 минут</strong></p>',
+      preview: 'Паста с томатами и базиликом. Простой и вкусный рецепт на 2 порции. Ингредиенты: Спагетти — 200 г, Томаты черри — 300 г…',
+      tags: [{ id: 'tag-1', name: 'Личное', color: 'blue' }],
+      createdAt: threeDaysAgo.toISOString(),
+      updatedAt: threeDaysAgo.toISOString(),
+      isPinned: false,
+    },
+    {
+      id: 'demo-5',
+      title: 'Книги к прочтению',
+      content: '<h2>Список книг</h2><ol><li>«Атомные привычки» — Джеймс Клир</li><li>«Думай медленно, решай быстро» — Даниэль Канеман</li><li>«Sapiens» — Юваль Ной Харари</li></ol><blockquote>Читать минимум 30 минут в день</blockquote>',
+      preview: 'Список книг: «Атомные привычки» — Джеймс Клир, «Думай медленно, решай быстро» — Даниэль Канеман…',
+      tags: [{ id: 'tag-1', name: 'Личное', color: 'blue' }],
+      createdAt: fiveDaysAgo.toISOString(),
+      updatedAt: fiveDaysAgo.toISOString(),
+      isPinned: false,
+    },
+    {
+      id: 'demo-6',
+      title: 'Встреча с командой',
+      content: '<h2>Итоги встречи</h2><p>Обсудили план на следующий квартал.</p><h3>Основные решения:</h3><ul><li>Запустить новый продукт до конца месяца</li><li>Увеличить бюджет на маркетинг</li><li>Нанять двух разработчиков</li></ul>',
+      preview: 'Итоги встречи. Обсудили план на следующий квартал. Основные решения: Запустить новый продукт до конца месяца…',
+      tags: [
+        { id: 'tag-2', name: 'Работа', color: 'green' },
+      ],
+      createdAt: sevenDaysAgo.toISOString(),
+      updatedAt: sevenDaysAgo.toISOString(),
       isPinned: false,
     },
   ];

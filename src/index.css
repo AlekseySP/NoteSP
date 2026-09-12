@@ -20,7 +20,34 @@
   --color-tag-purple: #EDE9FE;
   --color-tag-yellow: #FEF3C7;
   --color-tag-pink: #FCE7F3;
+  --color-sidebar: #F8F5EF;
+  --color-hover: rgba(0, 0, 0, 0.03);
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ===== ТЁМНАЯ ТЕМА ===== */
+html.dark {
+  --color-cream: #111318;
+  --color-cream-dark: #1A1D24;
+  --color-card: #161920;
+  --color-accent: #1E2A3A;
+  --color-accent-hover: #243447;
+  --color-accent-active: #2B4260;
+  --color-text-primary: #E5E7EB;
+  --color-text-secondary: #9CA3AF;
+  --color-text-muted: #6B7280;
+  --color-border: #2A2F3A;
+  --color-border-light: #1F232B;
+  --color-danger: #F87171;
+  --color-danger-light: #3B1F1F;
+  --color-success: #34D399;
+  --color-tag-blue: #1E3A5F;
+  --color-tag-green: #1F3D2E;
+  --color-tag-purple: #2E1F4E;
+  --color-tag-yellow: #3D3418;
+  --color-tag-pink: #3D1F33;
+  --color-sidebar: #13151B;
+  --color-hover: rgba(255, 255, 255, 0.04);
 }
 
 /* Base styles */
@@ -30,6 +57,7 @@ body {
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Scrollbar styling */
@@ -218,7 +246,7 @@ body {
 /* Mobile-specific styles */
 @media (max-width: 1023px) {
   .tiptap {
-    font-size: 16px; /* Предотвращает зум на iOS */
+    font-size: 16px;
   }
 }
 
@@ -233,4 +261,20 @@ input:focus-visible {
 ::selection {
   background-color: #BFDBFE;
   color: #1E40AF;
+}
+
+html.dark ::selection {
+  background-color: #1E3A5F;
+  color: #93C5FD;
+}
+
+/* Smooth theme transition for main elements */
+body,
+main,
+aside,
+header,
+.tiptap,
+input,
+button {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }

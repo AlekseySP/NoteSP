@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { useNotesStore } from '../store/useNotesStore';
 import NoteList from './NoteList';
+import Calendar from './Calendar';
+import ThemeToggle from './ThemeToggle';
 
 export default function Sidebar() {
   const {
@@ -40,24 +42,31 @@ export default function Sidebar() {
       <aside
         className={`
           fixed lg:relative z-50 lg:z-auto
-          h-full w-80 bg-cream border-r border-border
-          flex flex-col transition-transform duration-300 ease-in-out
+          h-full w-80 border-r border-border
+          flex flex-col transition-all duration-300 ease-in-out
+          bg-sidebar
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:-translate-x-full lg:w-0 lg:min-w-0 lg:overflow-hidden'}
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <div className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-blue-500" />
             <h1 className="text-base font-semibold text-text-primary">Дневник</h1>
           </div>
-          <button
-            onClick={toggleSidebar}
-            className="p-1.5 rounded-lg hover:bg-accent transition-colors lg:hidden"
-          >
-            <X className="w-5 h-5 text-text-secondary" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <ThemeToggle />
+            <button
+              onClick={toggleSidebar}
+              className="p-1.5 rounded-lg hover:bg-accent transition-colors lg:hidden"
+            >
+              <X className="w-5 h-5 text-text-secondary" />
+            </button>
+          </div>
         </div>
+
+        {/* Календарь */}
+        <Calendar />
 
         {/* Кнопка новой записи */}
         <div className="px-3 py-3">

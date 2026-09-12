@@ -25,6 +25,7 @@ export interface Note {
 export interface NoteFilters {
   searchQuery: string;
   selectedTag: string | null;
+  selectedDate: string | null; // ISO-строка даты (YYYY-MM-DD) или null
   sortBy: 'updatedAt' | 'createdAt' | 'title';
 }
 

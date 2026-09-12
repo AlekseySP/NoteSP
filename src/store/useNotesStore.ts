@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
+import { format } from 'date-fns';
 import { Note, Tag, NoteFilters } from '../types';
 import { saveNotes, loadNotes, loadTags, saveTags, extractPreview, getDemoNotes } from '../utils/storage';
 
@@ -10,9 +11,11 @@ interface NotesStore {
   activeNoteId: string | null;
   filters: NoteFilters;
   isSidebarOpen: boolean;
+  calendarView: 'month' | 'week';
 
   // Действия с заметками
   createNote: () => void;
+  createNoteForDate: (date: Date) => void;
   updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'tags' | 'isPinned'>>) => void;
   deleteNote: (id: string) => void;
   setActiveNote: (id: string | null) => void;
@@ -25,15 +28,20 @@ interface NotesStore {
   // Фильтры
   setSearchQuery: (query: string) => void;
   setSelectedTag: (tagId: string | null) => void;
+  setSelectedDate: (date: string | null) => void;
   setSortBy: (sortBy: NoteFilters['sortBy']) => void;
+  clearFilters: () => void;
 
   // UI
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
+  setCalendarView: (view: 'month' | 'week') => void;
 
-  // Получение отфильтрованных заметок
+  // Получение данных
   getFilteredNotes: () => Note[];
   getActiveNote: () => Note | undefined;
+  getNoteForDate: (date: Date) => Note | undefined;
+  getDatesWithNotes: () => Set<string>;
 }
 
 export const useNotesStore = create<NotesStore>((set, get) => ({
@@ -44,9 +52,11 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   filters: {
     searchQuery: '',
     selectedTag: null,
+    selectedDate: null,
     sortBy: 'updatedAt',
   },
   isSidebarOpen: true,
+  calendarView: 'month',
 
   // Создать новую заметку
   createNote: () => {
@@ -71,6 +81,34 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     });
   },
 
+  // Создать заметку на конкретную дату
+  createNoteForDate: (date: Date) => {
+    // Устанавливаем время на полдень, чтобы избежать проблем с часовыми зонами
+    const targetDate = new Date(date);
+    targetDate.setHours(12, 0, 0, 0);
+    const iso = targetDate.toISOString();
+
+    const newNote: Note = {
+      id: uuidv4(),
+      title: format(targetDate, 'd MMMM yyyy'),
+      content: '',
+      preview: '',
+      tags: [],
+      createdAt: iso,
+      updatedAt: iso,
+      isPinned: false,
+    };
+
+    set((state) => {
+      const updatedNotes = [newNote, ...state.notes];
+      saveNotes(updatedNotes);
+      return {
+        notes: updatedNotes,
+        activeNoteId: newNote.id,
+      };
+    });
+  },
+
   // Обновить заметку
   updateNote: (id, updates) => {
     set((state) => {
@@ -81,7 +119,6 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
           ...updates,
           updatedAt: new Date().toISOString(),
         };
-        // Обновляем превью если изменился контент
         if (updates.content !== undefined) {
           updated.preview = extractPreview(updates.content);
         }
@@ -107,12 +144,10 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     });
   },
 
-  // Установить активную заметку
   setActiveNote: (id) => {
     set({ activeNoteId: id });
   },
 
-  // Переключить закрепление
   togglePin: (id) => {
     set((state) => {
       const updatedNotes = state.notes.map((note) =>
@@ -123,7 +158,6 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     });
   },
 
-  // Добавить тег
   addTag: (name, color) => {
     const newTag: Tag = { id: uuidv4(), name, color };
     set((state) => {
@@ -133,11 +167,9 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     });
   },
 
-  // Удалить тег
   removeTag: (id) => {
     set((state) => {
       const updatedTags = state.tags.filter((t) => t.id !== id);
-      // Также удаляем тег из всех заметок
       const updatedNotes = state.notes.map((note) => ({
         ...note,
         tags: note.tags.filter((t) => t.id !== id),
@@ -148,7 +180,6 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     });
   },
 
-  // Фильтры
   setSearchQuery: (query) => {
     set((state) => ({ filters: { ...state.filters, searchQuery: query } }));
   },
@@ -157,11 +188,20 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     set((state) => ({ filters: { ...state.filters, selectedTag: tagId } }));
   },
 
+  setSelectedDate: (date) => {
+    set((state) => ({ filters: { ...state.filters, selectedDate: date } }));
+  },
+
   setSortBy: (sortBy) => {
     set((state) => ({ filters: { ...state.filters, sortBy } }));
   },
 
-  // UI
+  clearFilters: () => {
+    set((state) => ({
+      filters: { ...state.filters, searchQuery: '', selectedTag: null, selectedDate: null },
+    }));
+  },
+
   toggleSidebar: () => {
     set((state) => ({ isSidebarOpen: !state.isSidebarOpen }));
   },
@@ -170,12 +210,14 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     set({ isSidebarOpen: open });
   },
 
-  // Получить отфильтрованные и отсортированные заметки
+  setCalendarView: (view) => {
+    set({ calendarView: view });
+  },
+
   getFilteredNotes: () => {
     const { notes, filters } = get();
     let filtered = [...notes];
 
-    // Фильтр по поисковому запросу
     if (filters.searchQuery.trim()) {
       const query = filters.searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -185,14 +227,20 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
       );
     }
 
-    // Фильтр по тегу
     if (filters.selectedTag) {
       filtered = filtered.filter((note) =>
         note.tags.some((tag) => tag.id === filters.selectedTag)
       );
     }
 
-    // Сортировка: закреплённые всегда сверху
+    // Фильтр по дате
+    if (filters.selectedDate) {
+      filtered = filtered.filter((note) => {
+        const noteDate = format(new Date(note.createdAt), 'yyyy-MM-dd');
+        return noteDate === filters.selectedDate;
+      });
+    }
+
     filtered.sort((a, b) => {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
@@ -212,9 +260,28 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     return filtered;
   },
 
-  // Получить активную заметку
   getActiveNote: () => {
     const { notes, activeNoteId } = get();
     return notes.find((note) => note.id === activeNoteId);
+  },
+
+  // Получить заметку за конкретный день
+  getNoteForDate: (date: Date) => {
+    const { notes } = get();
+    const targetDate = format(date, 'yyyy-MM-dd');
+    return notes.find((note) => {
+      const noteDate = format(new Date(note.createdAt), 'yyyy-MM-dd');
+      return noteDate === targetDate;
+    });
+  },
+
+  // Получить все даты, в которые есть заметки (для индикаторов в календаре)
+  getDatesWithNotes: () => {
+    const { notes } = get();
+    const dates = new Set<string>();
+    notes.forEach((note) => {
+      dates.add(format(new Date(note.createdAt), 'yyyy-MM-dd'));
+    });
+    return dates;
   },
 }));

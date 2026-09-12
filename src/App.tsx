@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNotesStore } from './store/useNotesStore';
+import { useThemeStore } from './store/useThemeStore';
 import Layout from './components/Layout';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -9,7 +10,13 @@ import EmptyState from './components/EmptyState';
 
 export default function App() {
   const { getActiveNote, updateNote, createNote } = useNotesStore();
+  const { initTheme } = useThemeStore();
   const activeNote = getActiveNote();
+
+  // Инициализация темы при загрузке
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
 
   // Глобальные горячие клавиши
   useEffect(() => {
